@@ -1,6 +1,6 @@
-import React from 'react';
+import { ChangeEvent } from 'react';
 
 export interface InputProps {
   value: string;
-  inputHandler: (e: any) => void;
+  inputHandler: (e: ChangeEvent<HTMLInputElement>) => void;
 }

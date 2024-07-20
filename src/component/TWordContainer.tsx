@@ -1,16 +1,16 @@
 import { TInput } from './TInput.tsx';
 import { TTimer } from './TTimer.tsx';
 import { TButton } from './TButton.tsx';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { TWordBox } from './TWordBox.tsx';
 import { ResultFace } from '../type/WordContainerType.ts';
-import { TResultItem } from './TResultItem.tsx';
+import { TResultBox } from './TResultBox.tsx';
 
 export const TWordContainer = () => {
-  const [seconds, setSeconds] = useState<number>(10);
-  const [isStarted, setIsStarted] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [target, setTarget] = useState<number>(0);
+  const [seconds, setSeconds] = useState(60);
+  const [isStarted, setIsStarted] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [target, setTarget] = useState(0);
   const wordsList = [
     'Mehdi',
     'Ali',
@@ -22,33 +22,28 @@ export const TWordContainer = () => {
     'BMW',
     'Benz',
     'Micro',
+    'Nano',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
+    'Git',
   ];
 
-  const [isResult, setIsResult] = useState(false);
+  const [isResultRender, setIsResultRender] = useState(false);
 
   const [result, setResult] = useState<ResultFace>({
     correctWords: 0,
     inCorrectWords: 0,
     countOfWords: 0,
   });
-
-  const checker = (inputValue: string) => {
-    const isCorrect =
-      wordsList[target].toLowerCase() === inputValue.trim().toLowerCase();
-    if (isCorrect) {
-      setResult((prevState) => ({
-        ...prevState,
-        correctWords: ++prevState.correctWords,
-        countOfWords: ++prevState.countOfWords,
-      }));
-    } else if (!isCorrect) {
-      setResult((prevState) => ({
-        ...prevState,
-        inCorrectWords: ++prevState.inCorrectWords,
-      }));
-    }
-    console.log(result);
-  };
 
   useEffect(() => {
     if (isStarted && seconds > 0) {
@@ -58,31 +53,52 @@ export const TWordContainer = () => {
       return () => clearInterval(interval);
     } else if (seconds === 0) {
       setIsStarted(false);
-      setIsResult(true);
+      setIsResultRender(true);
       return;
     }
   }, [isStarted, seconds]);
 
-  const reset = (): void => {
-    setSeconds(60);
-    setIsStarted(false);
-    setInputValue('');
-  };
-
-  const handleInput = (e): void => {
-    setIsStarted(true);
-    setInputValue(e.target.value);
-    if (e.target.value.endsWith(' ')) {
-      checker(e.target.value);
-      setTarget((prevTarget) => ++prevTarget);
-      setInputValue('');
-    }
-  };
-
-  const formatTime = (seconds: number): string => {
+  function formatTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  }
+
+  function checker(inputValue: string): void {
+    if (wordsList[target].toLowerCase() === inputValue.trim().toLowerCase()) {
+      setResult((prevState) => ({
+        ...prevState,
+        correctWords: ++prevState.correctWords,
+        countOfWords: ++prevState.countOfWords,
+      }));
+      // Todo: Is setTarget used on the good situation || should use on handleInput function after checker()
+      setTarget((prevTarget) => ++prevTarget);
+      return;
+    }
+    setResult((prevState) => ({
+      ...prevState,
+      inCorrectWords: ++prevState.inCorrectWords,
+    }));
+    return;
+  }
+
+  function reset(): void {
+    setSeconds(60);
+    setIsStarted(false);
+    setInputValue('');
+    setIsResultRender(false);
+  }
+
+  // Todo: 'What is the type of event that come from DOM'
+  const handleInput = (e: ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value;
+    if (value.startsWith(' ')) return;
+    setIsStarted(true);
+    setInputValue(value);
+    if (value.endsWith(' ')) {
+      checker(value);
+      setInputValue('');
+    }
   };
 
   return (
@@ -101,7 +117,7 @@ export const TWordContainer = () => {
             return (
               <TWordBox
                 value={x}
-                theme={index === target ? 'bg-green-400' : 'bg-sky-50'}
+                theme={index === target ? 'bg-cyan-400' : 'bg-sky-50'}
                 key={x}
               />
             );
@@ -113,25 +129,7 @@ export const TWordContainer = () => {
           <TButton value={'Reset'} clickHandler={reset} />
         </div>
       </div>
-      {isResult && (
-        <div className={'w-2/4 h-64 bg-sky-50 rounded-md'}>
-          <TResultItem
-            content={'Correct Words'}
-            value={result.correctWords}
-            bgColor={'Green'}
-          />
-          <TResultItem
-            content={'Incorrect Words'}
-            value={result.inCorrectWords}
-            bgColor={'Red'}
-          />
-          <TResultItem
-            content={'Type Speed per minutes'}
-            value={result.countOfWords}
-            bgColor={'Blue'}
-          />
-        </div>
-      )}
+      <TResultBox data={result} isRender={isResultRender} />
     </>
   );
 };
