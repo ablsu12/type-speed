@@ -1,4 +1,4 @@
-import { BgColor, ResultProps } from '../type/ResultType.ts';
+import { BgColor, ResultProps } from '../type/type.ts';
 
 export const TResultItem = ({ content, value, bgColor }: ResultProps) => {
   const computedBgColor = (color: BgColor) => {
